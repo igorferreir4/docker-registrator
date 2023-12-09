@@ -27,7 +27,7 @@ jobs:
           name: Build and Push application Docker image
           command: |
             TAG=0.1.$CIRCLE_BUILD_NUM
-            docker build -t $DOCKERHUB_USERNAME/circleci-registrator:$TAG .
+            docker build -t circleci-registrator:$TAG .
             echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
             docker push $DOCKERHUB_USERNAME/circleci-registrator:$TAG
 
