@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  registrator:
+    image: igorferreir4/registrator:v1.0.1-alpine3.18
+    container_name: consul-registrator-traefik
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    command: -cleanup -deregister always -resync 10 -tags "oci-arm" -ip 0.0.0.0 consul://0.0.0.0:8500
+    network_mode: host
