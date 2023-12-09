@@ -3,7 +3,7 @@ version: 2.1
 executors:
   docker-publisher:
     environment:
-      IMAGE_TAG: $DOCKERHUB_USERNAME/circleci:latest
+      IMAGE_TAG: ${DOCKERHUB_USERNAME}/circleci:latest
     docker:
       - image: docker:stable
 
