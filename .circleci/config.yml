@@ -6,11 +6,9 @@ executors:
       - image: cimg/base:stable
 
 jobs:
-  build-and-push:
-    parameters:
-      arch:
-        type: string
+  build-and-push-amd64:
     executor: docker-executor
+    resource_class: large
     environment:
       DOCKERHUB_REPO: cicd
       DOCKER_IMAGE_TAGS: tag1,tag2,tag3
@@ -19,22 +17,9 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
-          name: Install Docker CLI and buildx
+          name: Build Docker image
           command: |
-            export DOCKER_CLI_AGGREGATE="true"
-            curl -fsSL https://get.docker.com | sh
-            docker version
-            docker buildx version
-      - run:
-          name: Create and use a new builder
-          command: |
-            docker buildx create --use
-            docker buildx inspect --bootstrap
-      - run:
-          name: Build multi-architecture Docker image
-          command: |
-            docker buildx build \
-              --platform linux/<< parameters.arch >> \
+            docker build \
               $(for tag in $(echo $DOCKER_IMAGE_TAGS | tr "," "\n"); do echo -n "-t $DOCKERHUB_USERNAME/$DOCKERHUB_REPO:$tag "; done) \
               .
       - run:
@@ -43,13 +28,33 @@ jobs:
             echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USERNAME}" --password-stdin
             docker push --all-tags $DOCKERHUB_USERNAME/$DOCKERHUB_REPO
         
+  build-and-push-arm64:
+    executor: docker-executor
+    resource_class: arm.large
+    environment:
+      DOCKERHUB_REPO: cicd
+      DOCKER_IMAGE_TAGS: tag1,tag2,tag3
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Build Docker image
+          command: |
+            docker build \
+              $(for tag in $(echo $DOCKER_IMAGE_TAGS | tr "," "\n"); do echo -n "-t $DOCKERHUB_USERNAME/$DOCKERHUB_REPO:$tag "; done) \
+              .
+      - run:
+          name: Push multi-architecture Docker image
+          command: |
+            echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USERNAME}" --password-stdin
+            docker push --all-tags $DOCKERHUB_USERNAME/$DOCKERHUB_REPO
+
 workflows:
   build:
     jobs:
-      - build-and-push:
-          matrix:
-            parameters:
-              arch: [amd64, arm64]
+      - build-and-push-amd64
+      - build-and-push-arm64
 
 
 
