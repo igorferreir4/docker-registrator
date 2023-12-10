@@ -19,9 +19,7 @@ orbs:
   docker: circleci/docker@2.4.0
 
 executors:
-  docker:
-    description: |
-      The docker container to use when running this orb's jobs
+  large:
     docker:
       - image: <<parameters.image>>:<<parameters.tag>>
     parameters:
@@ -33,14 +31,7 @@ executors:
         default: '3.6'
         description: Image tag
         type: string
-    resource_class: large
-
-
-  machine:
-    machine:
-      docker_layer_caching: false
-      image: ubuntu-2204:2023.10.1
-    resource_class: large
+      resource_class: large
 
 workflows:
   build-docker-image-with-buildkit:
@@ -53,3 +44,5 @@ workflows:
           # remote-docker-version: 20.10.12
           update-description: true
           use-buildkit: true
+          executor:
+            name: large
