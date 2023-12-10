@@ -15,9 +15,9 @@ workflows:
 
   build-docker-image-arm64:
     jobs:
-      - docker/install-docker-tools:
-          goss-architecture: arm64
       - docker/publish:
+          executor:
+            resource-class: arm.large
           image: $DOCKERHUB_USERNAME/cicd
           tag: tag27,tag28,$CIRCLE_SHA1
           dockerfile: Dockerfile.arm64
