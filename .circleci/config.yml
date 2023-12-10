@@ -19,14 +19,14 @@ orbs:
   docker: circleci/docker@2.4.0
 
 workflows:
-  # build-docker-image-only:
-  #   jobs:
-  #     - docker/publish:
-  #         image: $DOCKERHUB_USERNAME/cicd
-  #         tag: circleci1,circleci2
-  #         docker-password: $DOCKERHUB_PASSWORD
-  #         docker-username: $DOCKERHUB_USERNAME
-  #         update-description: true
+  build-docker-image-only:
+    jobs:
+      - docker/publish:
+          image: $DOCKERHUB_USERNAME/cicd
+          tag: circleci1,circleci2
+          docker-password: $DOCKERHUB_PASSWORD
+          docker-username: $DOCKERHUB_USERNAME
+          update-description: true
   build-docker-image-only-with-buildkit:
     jobs:
       - docker/publish:
