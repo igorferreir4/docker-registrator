@@ -4,15 +4,15 @@ executors:
   docker-multiaz:
     docker:
       - image: cimg/base:2023.12-22.04
-    environment:
-      DOCKERHUB_REPO: cicd
-      DOCKER_IMAGE_TAGS: latest,teste1012
-      DOCKER_IMAGE_ARCHS: amd64,arm64
 
 jobs:
   build-and-push:
     docker:
       - image: cimg/base:2023.12-22.04
+    environment:
+      DOCKERHUB_REPO: cicd
+      DOCKER_IMAGE_TAGS: latest,teste1012
+      DOCKER_IMAGE_ARCHS: amd64,arm64
     steps:
       - checkout
       - run:
