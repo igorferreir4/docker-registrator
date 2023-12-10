@@ -25,7 +25,7 @@ jobs:
       - run:
           name: Push multi-architecture Docker image
           command: |
-            echo “$DOCKERHUB_PASSWORD” | docker login -u “$DOCKERHUB_USERNAME” --password-stdin
+            echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
             docker push --all-tags $DOCKERHUB_USERNAME/$DOCKERHUB_REPO
         
   build-and-push-arm64:
@@ -47,7 +47,7 @@ jobs:
       - run:
           name: Push multi-architecture Docker image
           command: |
-            echo “$DOCKERHUB_PASSWORD” | docker login -u “$DOCKERHUB_USERNAME” --password-stdin
+            echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
             docker push --all-tags $DOCKERHUB_USERNAME/$DOCKERHUB_REPO
 
 workflows:
