@@ -27,11 +27,24 @@ executors:
 
 
 workflows:
-  build-docker-image-with-buildkit:
+  build-amd64:
     jobs:
       - docker/publish:
           image: $DOCKERHUB_USERNAME/cicd
           tag: circleci1,circleci2
+          docker-password: DOCKERHUB_PASSWORD
+          docker-username: DOCKERHUB_USERNAME
+          # remote-docker-version: 20.10.12
+          update-description: true
+          use-buildkit: true
+          executor:
+            name: machine
+  build-arm64:
+    jobs:
+      - docker/publish:
+          image: $DOCKERHUB_USERNAME/cicd
+          tag: circleci1,circleci2
+          dockerfile: Dockerfile.arm64
           docker-password: DOCKERHUB_PASSWORD
           docker-username: DOCKERHUB_USERNAME
           # remote-docker-version: 20.10.12
