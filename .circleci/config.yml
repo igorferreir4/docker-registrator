@@ -24,7 +24,11 @@ executors:
       docker_layer_caching: false
       image: ubuntu-2204:2023.10.1
     resource_class: large
-
+  machine-arm64:
+    machine:
+      docker_layer_caching: false
+      image: ubuntu-2204:2023.10.1
+    resource_class: arm.large
 
 workflows:
   build-amd64:
@@ -50,3 +54,5 @@ workflows:
           # remote-docker-version: 20.10.12
           update-description: true
           use-buildkit: true
+          executor:
+            name: machine-arm64
