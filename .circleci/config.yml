@@ -20,13 +20,57 @@ orbs:
 
 executors:
   default:
+    description: |
+      The circleci-cli Docker image, which includes the CircleCI CLI executable.
+    docker:
+      - image: circleci/circleci-cli:<< parameters.tag >>
     parameters:
       resource_class:
         default: large
+        description: Configure the executor resource class
+        enum:
+          - small
+          - medium
+          - medium+
+          - large
+          - xlarge
+          - 2xlarge
+          - 2xlarge+
+        type: enum
+      tag:
+        default: 0.1.26646
+        description: >
+          What version of the CircleCI CLI Docker image? For full list, see
+          https://hub.docker.com/r/circleci/circleci-cli/tags
+        type: string
+    resource_class: << parameters.resource_class >>
+
   python:
+    description: >
+      An Ubuntu based image built by CircleCI with CI/CD in mind. This image
+      contains basic tools and the Python runtime.
+    docker:
+      - image: cimg/python:<< parameters.tag >>
     parameters:
       resource_class:
         default: large
+        description: Configure the executor resource class
+        enum:
+          - small
+          - medium
+          - medium+
+          - large
+          - xlarge
+          - 2xlarge
+          - 2xlarge+
+        type: enum
+      tag:
+        default: '3.11'
+        description: >
+          What version of the cimg/python image? For full list, see
+          https://circleci.com/developer/images/image/cimg/python
+        type: string
+    resource_class: << parameters.resource_class >>
 
 workflows:
   build-docker-image-only:
