@@ -17,6 +17,7 @@ workflows:
     jobs:
       - docker/publish:
           executor:
+            name: machine
             resource-class: arm.large
           image: $DOCKERHUB_USERNAME/cicd
           tag: tag27,tag28,$CIRCLE_SHA1
