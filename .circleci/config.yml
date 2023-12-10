@@ -18,6 +18,10 @@ version: 2.1
 orbs:
   docker: circleci/docker@2.4.0
 
+executor:
+  machine:
+    resource_class: large
+
 workflows:
   build-docker-image-only:
     jobs:
