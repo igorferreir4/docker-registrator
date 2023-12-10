@@ -50,7 +50,7 @@ executors:
         default: ubuntu-2204:2023.10.1
         type: string
       resource-class:
-        default: medium
+        default: large
         description: Resource class.
         enum:
           - medium
