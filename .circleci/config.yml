@@ -28,7 +28,7 @@ workflows:
           docker-username: DOCKERHUB_USERNAME
           update-description: true
           machine:
-            resource-class: large
+            - resource-class: large
   build-docker-image-only-with-buildkit:
     jobs:
       - docker/publish:
@@ -40,4 +40,4 @@ workflows:
           update-description: true
           use-buildkit: true
           machine:
-            resource-class: large
+            - resource-class: large
