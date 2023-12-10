@@ -19,46 +19,36 @@ orbs:
   docker: circleci/docker@2.4.0
 
 executors:
-  default:
-    description: |
-      The circleci-cli Docker image, which includes the CircleCI CLI executable.
-    docker:
-      - image: circleci/circleci-cli:<< parameters.tag >>
-    parameters:
-      resource_class:
-        default: large
-        description: Configure the executor resource class
-        enum:
-          - large
-        type: enum
-      tag:
-        default: 0.1.26646
-        description: >
-          What version of the CircleCI CLI Docker image? For full list, see
-          https://hub.docker.com/r/circleci/circleci-cli/tags
-        type: string
-    resource_class: large
-    
-  python:
+  machine:
     description: >
-      An Ubuntu based image built by CircleCI with CI/CD in mind. This image
-      contains basic tools and the Python runtime.
-    docker:
-      - image: cimg/python:<< parameters.tag >>
+      CircleCI's Ubuntu-based machine executor VM:
+      https://circleci.com/docs/2.0/executor-types/#using-machine
+    machine:
+      docker_layer_caching: <<parameters.dlc>>
+      image: <<parameters.image>>
     parameters:
-      resource_class:
-        default: large
-        description: Configure the executor resource class
-        enum:
-          - large
-        type: enum
-      tag:
-        default: '3.11'
-        description: >
-          What version of the cimg/python image? For full list, see
-          https://circleci.com/developer/images/image/cimg/python
+      dlc:
+        default: false
+        description: Enable Docker Layer Caching?
+        type: boolean
+      image:
+        default: ubuntu-2204:2023.02.1
         type: string
-    resource_class: large
+      resource-class:
+        default: large
+        description: Resource class.
+        enum:
+          - medium
+          - large
+          - xlarge
+          - 2xlarge
+          - arm.medium
+          - arm.large
+          - arm.xlarge
+          - arm.2xlarge
+        type: enum
+    resource_class: <<parameters.resource-class>>
+
 
 workflows:
   build-docker-image-only:
