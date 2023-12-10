@@ -61,5 +61,5 @@ workflows:
           # remote-docker-version: 20.10.12
           update-description: true
           use-buildkit: true
-          # executor:
-          #   name: machine
+          executor:
+            name: machine
