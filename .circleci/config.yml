@@ -29,13 +29,7 @@ executors:
         default: large
         description: Configure the executor resource class
         enum:
-          - small
-          - medium
-          - medium+
           - large
-          - xlarge
-          - 2xlarge
-          - 2xlarge+
         type: enum
       tag:
         default: 0.1.26646
@@ -43,8 +37,8 @@ executors:
           What version of the CircleCI CLI Docker image? For full list, see
           https://hub.docker.com/r/circleci/circleci-cli/tags
         type: string
-    resource_class: << parameters.resource_class >>
-
+    resource_class: large
+    
   python:
     description: >
       An Ubuntu based image built by CircleCI with CI/CD in mind. This image
@@ -56,13 +50,7 @@ executors:
         default: large
         description: Configure the executor resource class
         enum:
-          - small
-          - medium
-          - medium+
           - large
-          - xlarge
-          - 2xlarge
-          - 2xlarge+
         type: enum
       tag:
         default: '3.11'
@@ -70,7 +58,7 @@ executors:
           What version of the cimg/python image? For full list, see
           https://circleci.com/developer/images/image/cimg/python
         type: string
-    resource_class: << parameters.resource_class >>
+    resource_class: large
 
 workflows:
   build-docker-image-only:
