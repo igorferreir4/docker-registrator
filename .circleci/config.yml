@@ -31,8 +31,6 @@ workflows:
           docker-password: DOCKERHUB_PASSWORD
           docker-username: DOCKERHUB_USERNAME
           update-description: true
-          machine:
-            - resource-class: large
   build-docker-image-only-with-buildkit:
     jobs:
       - docker/publish:
@@ -43,5 +41,3 @@ workflows:
           # remote-docker-version: 20.10.12
           update-description: true
           use-buildkit: true
-          machine:
-            - resource-class: large
