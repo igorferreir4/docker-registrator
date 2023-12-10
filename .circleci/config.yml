@@ -19,18 +19,36 @@ orbs:
   docker: circleci/docker@2.4.0
 
 executors:
-  large:
-    docker:
-      - image: <<parameters.image>>:<<parameters.tag>>
+  machine:
+    description: >
+      CircleCI's Ubuntu-based machine executor VM:
+      https://circleci.com/docs/2.0/executor-types/#using-machine
+    machine:
+      docker_layer_caching: <<parameters.dlc>>
+      image: <<parameters.image>>
     parameters:
+      dlc:
+        default: false
+        description: Enable Docker Layer Caching?
+        type: boolean
       image:
-        default: cimg/python
-        description: Docker image name
+        default: ubuntu-2204:2023.02.1
         type: string
-      tag:
-        default: '3.6'
-        description: Image tag
-        type: string
+      resource-class:
+        default: large
+        description: Resource class.
+        enum:
+          - medium
+          - large
+          - xlarge
+          - 2xlarge
+          - arm.medium
+          - arm.large
+          - arm.xlarge
+          - arm.2xlarge
+        type: enum
+    resource_class: large
+
 
 workflows:
   build-docker-image-with-buildkit:
@@ -44,4 +62,4 @@ workflows:
           update-description: true
           use-buildkit: true
           executor:
-            name: large
+            name: machine
