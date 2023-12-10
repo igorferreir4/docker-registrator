@@ -1,62 +1,27 @@
 version: 2.1
 
-executors:
-  docker-multiaz:
-    docker:
-      - image: cimg/base:2023.12-22.04
-    environment:
-      DOCKERHUB_REPO: cicd
-      DOCKER_IMAGE_TAGS: latest,teste1012
-      DOCKER_IMAGE_ARCHS: amd64,arm64
-
-jobs:
-  build-and-push:
-    docker:
-      - image: cimg/base:2023.12-22.04
-    steps:
-      - checkout
-      - run:
-          name: Install QEMU
-          command: |
-            docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - run:
-          name: Install Docker CLI and buildx
-          command: |
-            export DOCKER_CLI_AGGREGATE="true"
-            curl -fsSL https://get.docker.com | sh
-            docker version
-            docker buildx version
-      - run:
-          name: Create and use a new builder
-          command: |
-            docker buildx create --use
-            docker buildx inspect --bootstrap
-      - run:
-          name: Build multi-architecture Docker image
-          command: |
-            for tag in $(echo $DOCKER_IMAGE_TAGS | tr "," "\n")
-            do
-              for arch in $(echo $DOCKER_IMAGE_ARCHS | tr "," "\n")
-              do
-                docker buildx build \
-                  --platform linux/$arch \
-                  -t $DOCKERHUB_USERNAME/$DOCKERHUB_REPO:$tag \
-                  -f .
-              done
-            done
-      - run:
-          name: Push multi-architecture Docker image
-          command: |
-            docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
-            for tag in $(echo $DOCKER_IMAGE_TAGS | tr "," "\n")
-            do
-              docker push $DOCKERHUB_USERNAME/$DOCKERHUB_REPO:$tag
-            done
+orbs:
+  docker: circleci/docker@2.4.0
 
 workflows:
-  build:
+  build-docker-image-amd64:
+    environment:
+      DOCKERHUB_REPO: cicd
     jobs:
-      - build-and-push:
-          context: docker-multiaz
+      - docker/publish:
+          image: $DOCKERHUB_USERNAME/$DOCKERHUB_REPO
+          tag: tag27,tag28,$CIRCLE_SHA1
+          dockerfile: Dockerfile
+          docker-password: DOCKERHUB_PASSWORD
+          docker-username: DOCKERHUB_USERNAME
+
+  build-docker-image-arm64:
+    environment:
+      DOCKERHUB_REPO: cicd
+    jobs:
+      - docker/publish:
+          image: $DOCKERHUB_USERNAME/$DOCKERHUB_REPO
+          tag: tag27,tag28,$CIRCLE_SHA1
+          dockerfile: Dockerfile.arm64
+          docker-password: DOCKERHUB_PASSWORD
+          docker-username: DOCKERHUB_USERNAME
