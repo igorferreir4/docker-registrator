@@ -7,15 +7,13 @@ executors:
 
 jobs:
   build-and-push:
-    environment:
-      DOCKERHUB_REPO: cicd
     parameters:
-      tag:
-        type: string
       arch:
         type: string
     docker:
       - image: cimg/base:2023.12-22.04
+    environment:
+      DOCKER_IMAGE_TAGS: teste1,teste2
     steps:
       - checkout
       - run:
@@ -41,13 +39,13 @@ jobs:
           command: |
             docker buildx build \
               --platform linux/<< parameters.arch >> \
-              -t $DOCKERHUB_USERNAME/$DOCKERHUB_REPO:<< parameters.tag >> \
+              $(for tag in $(echo $DOCKER_IMAGE_TAGS | tr "," "\n"); do echo -n "-t $DOCKERHUB_USERNAME/$DOCKERHUB_REPO:$tag "; done) \
               .
       - run:
           name: Push multi-architecture Docker image
           command: |
             docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
-            docker push $DOCKERHUB_USERNAME/$DOCKERHUB_REPO:<< parameters.tag >>
+            docker push $DOCKERHUB_USERNAME/$DOCKERHUB_REPO
 
 workflows:
   build:
@@ -55,7 +53,6 @@ workflows:
       - build-and-push:
           matrix:
             parameters:
-              tag: [teste1, teste2]
               arch: [amd64, arm64]
 
 
