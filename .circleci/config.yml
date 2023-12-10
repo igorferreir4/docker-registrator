@@ -47,7 +47,7 @@ executors:
           - arm.xlarge
           - arm.2xlarge
         type: enum
-    resource_class: <<parameters.resource-class>>
+    resource_class: large
 
 
 workflows:
