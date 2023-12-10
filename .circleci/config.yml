@@ -18,29 +18,23 @@ version: 2.1
 orbs:
   docker: circleci/docker@2.4.0
 
-jobs:
-  build-and-push:
-    executor: docker/docker
-    steps:
-      - setup_remote_docker
-      - checkout
-      - docker/check
-      - docker/build:
-          image: $DOCKERHUB_USERNAME/cicd
-      - docker/push:
-          digest-path: /tmp/digest.txt
+workflows:
+  # build-docker-image-only:
+  #   jobs:
+  #     - docker/publish:
+  #         image: $DOCKERHUB_USERNAME/cicd
+  #         tag: circleci1,circleci2
+  #         docker-password: $DOCKERHUB_PASSWORD
+  #         docker-username: $DOCKERHUB_USERNAME
+  #         update-description: true
+  build-docker-image-only-with-buildkit:
+    jobs:
+      - docker/publish:
           image: $DOCKERHUB_USERNAME/cicd
           tag: circleci1,circleci2
-      # - docker/publish:
-      #     image: $DOCKERHUB_USERNAME/cicd
-      #     tag: circleci1,circleci2
-      #     docker-password: $DOCKERHUB_PASSWORD
-      #     docker-username: $DOCKERHUB_USERNAME
-      - run:
-          command: |
-            echo "Digest is: $(</tmp/digest.txt)"
-            
-workflows:
-  commit:
-    jobs:
-      - build-and-push
+          docker-password: $DOCKERHUB_PASSWORD
+          docker-username: $DOCKERHUB_USERNAME
+          # remote-docker-version: 20.10.12
+          update-description: true
+          use-buildkit: true
+          use-remote-docker: true
