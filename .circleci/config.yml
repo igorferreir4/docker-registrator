@@ -3,7 +3,7 @@ version: 2.1
 executors:
   docker-publisher:
     environment:
-      IMAGE_TAG: igorferreir4/circleci:teste2
+      IMAGE_TAG: circleci:teste2
     docker:
       - image: docker:stable
 
