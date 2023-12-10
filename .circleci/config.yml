@@ -43,7 +43,7 @@ jobs:
                 docker buildx build \
                   --platform linux/$arch \
                   -t $DOCKERHUB_USERNAME/$DOCKERHUB_REPO:$tag \
-                  -f .
+                  .
               done
             done
       - run:
