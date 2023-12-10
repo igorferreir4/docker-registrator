@@ -3,21 +3,26 @@ version: 2.1
 orbs:
   docker: circleci/docker@2.4.0
 
+executors:
+  teste:
+    docker:
+      - image: cimg/base:stable
+
 workflows:
-  build-docker-image-amd64:
-    jobs:
-      - docker/publish:
-          image: $DOCKERHUB_USERNAME/cicd
-          tag: tag27,tag28,$CIRCLE_SHA1
-          dockerfile: Dockerfile
-          docker-password: DOCKERHUB_PASSWORD
-          docker-username: DOCKERHUB_USERNAME
+  # build-docker-image-amd64:
+  #   jobs:
+  #     - docker/publish:
+  #         image: $DOCKERHUB_USERNAME/cicd
+  #         tag: tag27,tag28,$CIRCLE_SHA1
+  #         dockerfile: Dockerfile
+  #         docker-password: DOCKERHUB_PASSWORD
+  #         docker-username: DOCKERHUB_USERNAME
 
   build-docker-image-arm64:
     jobs:
       - docker/publish:
           executor:
-            name: machine
+            name: teste
             resource-class: arm.large
           image: $DOCKERHUB_USERNAME/cicd
           tag: tag27,tag28,$CIRCLE_SHA1
