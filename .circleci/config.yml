@@ -21,6 +21,7 @@ workflows:
           dockerfile: Dockerfile.arm64
           docker-password: DOCKERHUB_PASSWORD
           docker-username: DOCKERHUB_USERNAME
+          use-buildkit: true
 
 
 # version: 2.1
