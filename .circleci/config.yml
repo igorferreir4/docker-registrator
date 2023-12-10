@@ -19,7 +19,14 @@ orbs:
   docker: circleci/docker@2.4.0
 
 executors:
-  resource_class: large
+  default:
+    parameters:
+      resource_class:
+        default: large
+  python:
+    parameters:
+      resource_class:
+        default: large
 
 workflows:
   build-docker-image-only:
