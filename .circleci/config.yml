@@ -19,9 +19,49 @@ orbs:
   docker: circleci/docker@2.4.0
 
 executors:
-  machine:
+  docker:
+    description: |
+      The docker container to use when running this orb's jobs
     docker:
-      - image: docker:stable
+      - image: <<parameters.image>>:<<parameters.tag>>
+    parameters:
+      image:
+        default: cimg/python
+        description: Docker image name
+        type: string
+      tag:
+        default: '3.6'
+        description: Image tag
+        type: string
+
+  machine:
+    description: >
+      CircleCI's Ubuntu-based machine executor VM:
+      https://circleci.com/docs/2.0/executor-types/#using-machine
+    machine:
+      docker_layer_caching: <<parameters.dlc>>
+      image: <<parameters.image>>
+    parameters:
+      dlc:
+        default: false
+        description: Enable Docker Layer Caching?
+        type: boolean
+      image:
+        default: ubuntu-2204:2023.10.1
+        type: string
+      resource-class:
+        default: medium
+        description: Resource class.
+        enum:
+          - medium
+          - large
+          - xlarge
+          - 2xlarge
+          - arm.medium
+          - arm.large
+          - arm.xlarge
+          - arm.2xlarge
+        type: enum
     resource_class: large
 
 workflows:
