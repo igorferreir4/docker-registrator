@@ -18,6 +18,10 @@ version: 2.1
 orbs:
   docker: circleci/docker@2.4.0
 
+executors:
+  machine:
+    resource-class: large
+
 workflows:
   build-docker-image-only:
     jobs:
@@ -37,4 +41,3 @@ workflows:
           # remote-docker-version: 20.10.12
           update-description: true
           use-buildkit: true
-          use-remote-docker: true
