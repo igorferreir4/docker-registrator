@@ -31,7 +31,6 @@ executors:
         default: '3.6'
         description: Image tag
         type: string
-      resource_class: large
 
 workflows:
   build-docker-image-with-buildkit:
