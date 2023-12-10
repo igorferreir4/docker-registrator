@@ -1,156 +1,73 @@
 version: 2.1
 
-orbs:
-  docker: circleci/docker@2.4.0
-
 executors:
-  teste:
+  docker-publisher:
+    environment:
+      IMAGE_TAG: igorferreir4/circleci:teste2
     docker:
-      - image: cimg/base:stable
+      - image: docker:stable
+
+jobs:
+  build-amd64:
+    executor: docker-publisher
+    resource_class: large
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker image
+          command: docker build --tag \"${IMAGE_TAG}\" .
+      - run:
+          name: Archive Docker image
+          command: docker save --output amd64.tar \"${IMAGE_TAG}\"
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./amd64.tar
+
+  build-arm64:
+    executor: docker-publisher
+    resource_class: arm.large
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker image
+          command: docker build --tag \"${IMAGE_TAG}\" .
+      - run:
+          name: Archive Docker image
+          command: docker save --output arm64.tar \"${IMAGE_TAG}\"
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./arm64.tar
+
+  push:
+    executor: docker-publisher
+    steps:
+      - setup_remote_docker
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Load Docker images
+          command: |
+            docker load --input /tmp/workspace/amd64.tar
+            docker load --input /tmp/workspace/arm64.tar
+      - run:
+          name: Publish Docker image
+          command: |
+            echo \"${DOCKERHUB_PASSWORD}\" | docker login --username \"${DOCKERHUB_USERNAME}\" --password-stdin
+            docker push \"${IMAGE_TAG}\"
 
 workflows:
-  # build-docker-image-amd64:
-  #   jobs:
-  #     - docker/publish:
-  #         image: $DOCKERHUB_USERNAME/cicd
-  #         tag: tag27,tag28,$CIRCLE_SHA1
-  #         dockerfile: Dockerfile
-  #         docker-password: DOCKERHUB_PASSWORD
-  #         docker-username: DOCKERHUB_USERNAME
-
-  build-docker-image-arm64:
+  build-push:
     jobs:
-      - docker/publish:
-          executor:
-            name: teste
-            resource-class: arm.large
-          image: $DOCKERHUB_USERNAME/cicd
-          tag: tag27,tag28,$CIRCLE_SHA1
-          dockerfile: Dockerfile.arm64
-          docker-password: DOCKERHUB_PASSWORD
-          docker-username: DOCKERHUB_USERNAME
-          use-buildkit: true
-
-
-# version: 2.1
-
-# executors:
-#   docker-executor:
-#     docker:
-#       - image: cimg/base:stable
-
-# jobs:
-#   build-and-push-amd64:
-#     executor: docker-executor
-#     resource_class: large
-#     environment:
-#       DOCKERHUB_REPO: cicd
-#       DOCKER_IMAGE_TAGS: tag1,tag2,tag3
-#     steps:
-#       - checkout
-#       - setup_remote_docker:
-#           docker_layer_caching: true
-#       - run:
-#           name: Build Docker image
-#           command: |
-#             docker build \
-#               $(for tag in $(echo $DOCKER_IMAGE_TAGS | tr "," "\n"); do echo -n "-t $DOCKERHUB_USERNAME/$DOCKERHUB_REPO:$tag "; done) \
-#               .
-#       - run:
-#           name: Push multi-architecture Docker image
-#           command: |
-#             echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
-#             docker push --all-tags $DOCKERHUB_USERNAME/$DOCKERHUB_REPO
-        
-#   build-and-push-arm64:
-#     executor: docker-executor
-#     resource_class: arm.large
-#     environment:
-#       DOCKERHUB_REPO: cicd
-#       DOCKER_IMAGE_TAGS: tag1,tag2,tag3
-#     steps:
-#       - checkout
-#       - setup_remote_docker:
-#           docker_layer_caching: true
-#       - run:
-#           name: Build Docker image
-#           command: |
-#             docker build \
-#               $(for tag in $(echo $DOCKER_IMAGE_TAGS | tr "," "\n"); do echo -n "-t $DOCKERHUB_USERNAME/$DOCKERHUB_REPO:$tag "; done) \
-#               .
-#       - run:
-#           name: Push multi-architecture Docker image
-#           command: |
-#             echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
-#             docker push --all-tags $DOCKERHUB_USERNAME/$DOCKERHUB_REPO
-
-# workflows:
-#   build:
-#     jobs:
-#       - build-and-push-amd64
-#       - build-and-push-arm64
-
-
-
-# # version: 2.1
-
-# # executors:
-# #   docker-multiaz:
-# #     docker:
-# #       - image: cimg/base:2023.12-22.04
-
-# # jobs:
-# #   build-and-push:
-# #     docker:
-# #       - image: cimg/base:2023.12-22.04
-# #     environment:
-# #       DOCKERHUB_REPO: cicd
-# #       DOCKER_IMAGE_TAGS: latest,teste1012
-# #       DOCKER_IMAGE_ARCHS: amd64,arm64
-# #     steps:
-# #       - checkout
-# #       - run:
-# #           name: Install QEMU
-# #           command: |
-# #             docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-# #       - setup_remote_docker:
-# #           docker_layer_caching: true
-# #       - run:
-# #           name: Install Docker CLI and buildx
-# #           command: |
-# #             export DOCKER_CLI_AGGREGATE="true"
-# #             curl -fsSL https://get.docker.com | sh
-# #             docker version
-# #             docker buildx version
-# #       - run:
-# #           name: Create and use a new builder
-# #           command: |
-# #             docker buildx create --use
-# #             docker buildx inspect --bootstrap
-# #       - run:
-# #           name: Build multi-architecture Docker image
-# #           command: |
-# #             for tag in $(echo $DOCKER_IMAGE_TAGS | tr "," "\n")
-# #             do
-# #               for arch in $(echo $DOCKER_IMAGE_ARCHS | tr "," "\n")
-# #               do
-# #                 docker buildx build \
-# #                   --platform linux/$arch \
-# #                   -t $DOCKERHUB_USERNAME/$DOCKERHUB_REPO:$tag \
-# #                   .
-# #               done
-# #             done
-# #       - run:
-# #           name: Push multi-architecture Docker image
-# #           command: |
-# #             docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
-# #             for tag in $(echo $DOCKER_IMAGE_TAGS | tr "," "\n")
-# #             do
-# #               docker push $DOCKERHUB_USERNAME/$DOCKERHUB_REPO:$tag
-# #             done
-
-# # workflows:
-# #   build:
-# #     jobs:
-# #       - build-and-push:
-# #           context: docker-multiaz
+      - build-amd64
+      - build-arm64
+      - push:
+          requires:
+            - build-amd64
+            - build-arm64
+          filters:
+            branches:
+              only: main
