@@ -8,11 +8,11 @@ executors:
 
   arm64-executor:
     machine:
-      image: ubuntu-2204:current
+      image: ubuntu-2204:2023.10.1
     resource_class: arm.large
 
 jobs:
-  build_and_push_amd64:
+  build_amd64:
     executor: amd64-executor
     steps:
       - setup_remote_docker:
@@ -20,25 +20,34 @@ jobs:
           docker_layer_caching: true
       - checkout
       - run:
-          name: Build and push Docker image
+          name: Build Docker image
           command: |
             docker build -t $DOCKERHUB_USERNAME/cicd:testeagr .
-            echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
-            docker push $DOCKERHUB_USERNAME/cicd:testeagr
 
-  build_and_push_arm64:
+  build_arm64:
     executor: arm64-executor
     steps:
       - checkout
       - run:
-          name: Build and push Docker image
+          name: Build Docker image
           command: |
             docker build -t $DOCKERHUB_USERNAME/cicd:testeagr .
+
+  push:
+    executor: amd64-executor
+    steps:
+      - run:
+          name: Push Docker image
+          command: |
             echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
             docker push $DOCKERHUB_USERNAME/cicd:testeagr
 
 workflows:
   build_and_push:
     jobs:
-      - build_and_push_amd64
-      - build_and_push_arm64
+      - build_amd64
+      - build_arm64
+      - push:
+          requires:
+            - build_amd64
+            - build_arm64
