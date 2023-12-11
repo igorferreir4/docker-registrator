@@ -39,11 +39,11 @@ jobs:
           name: Login to Docker Hub
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login --username $DOCKERHUB_USERNAME --password-stdin
-      - run:
-          name: Pull Docker image for caching
-          command: |
-            docker pull $CACHE_REPO:$CACHE_NAME-amd64 || true
-            docker pull $CACHE_REPO:$CACHE_NAME-arm64 || true
+      # - run:
+      #     name: Pull Docker image for caching
+      #     command: |
+      #       docker pull $CACHE_REPO:$CACHE_NAME-amd64 || true
+      #       docker pull $CACHE_REPO:$CACHE_NAME-arm64 || true
       - run:
           name: Build multiarch docker image and push
           command: |
