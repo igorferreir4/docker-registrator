@@ -10,8 +10,8 @@ commands:
   setup:
     steps:
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
+      # - setup_remote_docker:
+      #     docker_layer_caching: true
       - run:
           name: setup Qemu
           command: |
@@ -31,17 +31,19 @@ jobs:
     # resource_class: arm.large
     environment:
       IMAGE_NAME: igorferreir4/cicd
-      IMAGE_TAGS: tagteste1,latest
+      IMAGE_TAGS: tagteste1,tagteste2
     steps:
+      - setup_remote_docker:
+          docker_layer_caching: true   
       - setup
       - run:
           name: Login to image registry
           command: |
-            docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
-      - run:
-          name: Pull Docker image for caching
-          command: |
-            docker pull $IMAGE_NAME:tagteste || true
+            echo "$DOCKERHUB_PASSWORD" | docker login --username $DOCKERHUB_USERNAME --password-stdin
+      # - run:
+      #     name: Pull Docker image for caching
+      #     command: |
+      #       docker pull $IMAGE_NAME:tagteste || true
       - run:
           name: Build multiarch docker image and push
           command: |
@@ -50,12 +52,37 @@ jobs:
             for tag in $(echo $IMAGE_TAGS | tr "," " "); do
               BUILDX_ARGS="$BUILDX_ARGS -t $IMAGE_NAME:$tag"
             done
-            echo $BUILDX_ARGS
-            # docker buildx build --push --platform linux/arm64,linux/amd64 $BUILDX_ARGS .
-            # DOCKER_CLI_EXPERIMENTAL=enabled
-            # docker buildx build --push --platform linux/arm64,linux/amd64 -t $IMAGE_NAME:$IMAGE_TAGS .
+            docker buildx build --push --platform linux/arm64,linux/amd64 $BUILDX_ARGS .
+
+  build2:
+    machine:
+      image: ubuntu-2204:2023.10.1
+    resource_class: arm.large
+    environment:
+      IMAGE_NAME: igorferreir4/cicd
+      IMAGE_TAGS: tagteste3,tagteste4
+    steps:
+      - setup
+      - run:
+          name: Login to image registry
+          command: |
+            echo "$DOCKERHUB_PASSWORD" | docker login --username $DOCKERHUB_USERNAME --password-stdin
+      # - run:
+      #     name: Pull Docker image for caching
+      #     command: |
+      #       docker pull $IMAGE_NAME:tagteste || true
+      - run:
+          name: Build multiarch docker image and push
+          command: |
+            DOCKER_CLI_EXPERIMENTAL=enabled
+            BUILDX_ARGS=""
+            for tag in $(echo $IMAGE_TAGS | tr "," " "); do
+              BUILDX_ARGS="$BUILDX_ARGS -t $IMAGE_NAME:$tag"
+            done
+            docker buildx build --push --platform linux/arm64,linux/amd64 $BUILDX_ARGS .
 
 workflows:
   build-and-push-multi-arch-image:
     jobs:
       - build
+      - build2
