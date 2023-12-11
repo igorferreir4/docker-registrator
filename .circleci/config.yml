@@ -40,7 +40,8 @@ jobs:
       - run:
           name: Pull Docker image for caching
           command: |
-            docker pull $IMAGE_NAME || true
+            docker pull $IMAGE_NAME:buildcache-amd64 || true
+            docker pull $IMAGE_NAME:buildcache-arm64 || true
       - run:
           name: Build multiarch docker image and push
           command: |
@@ -49,7 +50,15 @@ jobs:
             for tag in $(echo $IMAGE_TAGS | tr "," " "); do
               BUILDX_ARGS="$BUILDX_ARGS -t $IMAGE_NAME:$tag"
             done
-            docker buildx build --push --platform $IMAGE_ARCHS --cache-from=type=registry,ref=$IMAGE_NAME $BUILDX_ARGS .
+            docker buildx build --push --platform $IMAGE_ARCHS --cache-from $IMAGE_NAME:buildcache-amd64 --cache-from $IMAGE_NAME:buildcache-arm64 $BUILDX_ARGS .
+      - run:
+          name: Build cache for amd64 image and push
+          command: |
+            docker buildx --cache-from $IMAGE_NAME:buildcache-amd64 --cache-to $IMAGE_NAME:buildcache-amd64 --platform linux/amd64 .
+      - run:
+          name: Build cache for arm64 image and push
+          command: |
+            docker buildx --cache-from $IMAGE_NAME:buildcache-arm64 --cache-to $IMAGE_NAME:buildcache-arm64 --platform linux/arm64 .
 
 workflows:
   build-and-push-multi-arch-image:
