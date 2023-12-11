@@ -1,4 +1,10 @@
-FROM golang:1.21.5-alpine3.18 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.21.5-alpine3.18 AS builder
+
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+
+RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM"
+
 LABEL org.opencontainers.image.version="v8.1"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.title="Consul Registrator"

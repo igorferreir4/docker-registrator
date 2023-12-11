@@ -30,7 +30,7 @@ jobs:
     environment:
       IMAGE_NAME: igorferreir4/cicd
       IMAGE_TAGS: tagteste1,tagteste2,latest
-      IMAGE_ARCHS: linux/arm64,linux/amd64
+      IMAGE_ARCHS: linux/arm64,linux/amd64,linux/arm/v7
     steps: 
       - setup
       - run:
@@ -40,7 +40,7 @@ jobs:
       - run:
           name: Pull Docker image for caching
           command: |
-            docker pull $IMAGE_NAME:tagteste401 || true
+            docker pull $IMAGE_NAME || true
       - run:
           name: Build multiarch docker image and push
           command: |
