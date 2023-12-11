@@ -14,90 +14,26 @@ commands:
           version: docker24
           docker_layer_caching: true
       - run:
-          name: setup Qemu and Binfmt
+          name: Setup Qemu
           command: |
-            sudo apt-get update
-            sudo apt-get install -y qemu-user-static
-            sudo apt-get install -y binfmt-support
-      - run:
-          name: Check versions
-          command: |
-            qemu-aarch64-static --version
-            update-binfmts --version
+            docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
       - run:
           name: Create builder
           command: |
             export DOCKER_CLI_EXPERIMENTAL=enabled
-            docker buildx create --name arm-builder
-            docker buildx use arm-builder
-            docker buildx inspect --bootstrap
+            docker context create multi-arch-build
+            docker buildx create --use multi-arch-build
 
 jobs:
   build:
     executor: docker-executor
     environment:
       IMAGE_NAME: igorferreir4/cicd
-      IMAGE_TAGS: tagteste400,tagteste401
+      IMAGE_TAGS: tagteste1,tagteste2
     steps: 
       - setup
       - run:
-          name: Login to image registry
-          command: |
-            echo "$DOCKERHUB_PASSWORD" | docker login --username $DOCKERHUB_USERNAME --password-stdin
-      - run:
-          name: Build multiarch docker image and push
-          command: |
-            DOCKER_CLI_EXPERIMENTAL=enabled
-            BUILDX_ARGS=""
-            for tag in $(echo $IMAGE_TAGS | tr "," " "); do
-              BUILDX_ARGS="$BUILDX_ARGS -t $IMAGE_NAME:$tag"
-            done
-            docker buildx build --push --platform linux/arm64,linux/amd64 $BUILDX_ARGS .
-
-  # build2:
-  #   machine:
-  #     image: ubuntu-2204:2023.10.1
-  #     docker_layer_caching: true
-  #   resource_class: large
-  #   environment:
-  #     IMAGE_NAME: igorferreir4/cicd
-  #     IMAGE_TAGS: tagteste3,tagteste4
-  #   steps: 
-  #     - checkout
-  #     - run:
-  #         name: setup Qemu
-  #         command: |
-  #           docker run --rm --privileged hectorm/qemu-user-static --reset -p yes
-  #     - run:
-  #         name: Create builder
-  #         command: |
-  #           export DOCKER_CLI_EXPERIMENTAL=enabled
-  #           docker context create multi-arch-build
-  #           docker buildx create --use multi-arch-build
-  #     - run:
-  #         name: Login to image registry
-  #         command: |
-  #           echo "$DOCKERHUB_PASSWORD" | docker login --username $DOCKERHUB_USERNAME --password-stdin
-  #     - run:
-  #         name: Build multiarch docker image and push
-  #         command: |
-  #           DOCKER_CLI_EXPERIMENTAL=enabled
-  #           BUILDX_ARGS=""
-  #           for tag in $(echo $IMAGE_TAGS | tr "," " "); do
-  #             BUILDX_ARGS="$BUILDX_ARGS -t $IMAGE_NAME:$tag"
-  #           done
-  #           docker buildx build --push --platform linux/arm64,linux/amd64 $BUILDX_ARGS .
-
-  build3:
-    executor: docker-executor
-    resource_class: arm.large
-    environment:
-      IMAGE_NAME: igorferreir4/cicd
-      IMAGE_TAGS: tagteste300,tagteste301
-    steps: 
-      - setup
-      - run:
-          name: Login to image registry
+          name: Login to Docker Hub
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login --username $DOCKERHUB_USERNAME --password-stdin
       - run:
@@ -114,5 +50,3 @@ workflows:
   build-and-push-multi-arch-image:
     jobs:
       - build
-      # - build2
-      - build3
