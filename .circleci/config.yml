@@ -12,7 +12,7 @@ commands:
       - checkout
       - setup_remote_docker:
           version: docker24
-          docker_layer_caching: true
+          docker_layer_caching: false
       - run:
           name: Setup Qemu
           command: |
@@ -29,14 +29,18 @@ jobs:
     executor: docker-executor
     environment:
       IMAGE_NAME: igorferreir4/cicd
-      IMAGE_TAGS: tagteste1,tagteste2
-      IMAGE_ARCHS: linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6,linux/386,linux/ppc64le,linux/s390x,linux/riscv64,linux/mips64le,linux/mips64,linux/mips,linux/arm/v8
+      IMAGE_TAGS: tagteste1,tagteste2,latest
+      IMAGE_ARCHS: linux/arm64,linux/amd64,linux/arm/v7,linux/arm/v6,linux/386,linux/ppc64le,linux/s390x,linux/arm/v8
     steps: 
       - setup
       - run:
           name: Login to Docker Hub
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login --username $DOCKERHUB_USERNAME --password-stdin
+      - run:
+          name: Pull Docker image for caching
+          command: |
+            docker pull $IMAGE_NAME:tagteste401 || true
       - run:
           name: Build multiarch docker image and push
           command: |
@@ -45,7 +49,7 @@ jobs:
             for tag in $(echo $IMAGE_TAGS | tr "," " "); do
               BUILDX_ARGS="$BUILDX_ARGS -t $IMAGE_NAME:$tag"
             done
-            docker buildx build --push --platform $IMAGE_ARCHS $BUILDX_ARGS .
+            docker buildx build --push --platform $IMAGE_ARCHS --cache-from=type=registry,ref=$IMAGE_NAME $BUILDX_ARGS .
 
 workflows:
   build-and-push-multi-arch-image:
