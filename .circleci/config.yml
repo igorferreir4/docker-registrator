@@ -45,11 +45,11 @@ jobs:
           command: |
             DOCKER_CLI_EXPERIMENTAL=enabled
             IFS=',' read -ra TAGS <<< "$IMAGE_TAGS"
-            docker buildx build --push --platform linux/arm64,linux/amd64 -t $IMAGE_NAME:${TAGS[0]} .
-            for tag in "${TAGS[@]:1}"; do
-              docker tag $IMAGE_NAME:${TAGS[0]} $IMAGE_NAME:$tag
-              docker push $IMAGE_NAME:$tag
+            BUILDX_ARGS=""
+            for tag in "${TAGS[@]}"; do
+              BUILDX_ARGS="$BUILDX_ARGS -t $IMAGE_NAME:$tag"
             done
+            docker buildx build --push --platform linux/arm64,linux/amd64 $BUILDX_ARGS .
             # DOCKER_CLI_EXPERIMENTAL=enabled
             # docker buildx build --push --platform linux/arm64,linux/amd64 -t $IMAGE_NAME:$IMAGE_TAGS .
 
