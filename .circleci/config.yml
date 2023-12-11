@@ -1,5 +1,11 @@
 version: 2.1
 
+executors:
+  docker-executor:
+    docker:
+      - image: cimg/base:2023.12
+    resource_class: large
+
 commands:
   setup:
     steps:
@@ -17,11 +23,13 @@ commands:
 
 jobs:
   build:
-    machine:
-      image: ubuntu-2204:2023.10.1
+    executor: docker-executor
+    # machine:
+    #   image: ubuntu-2204:2023.10.1
+    # resource_class: arm.large
     environment:
       IMAGE_NAME: igorferreir4/cicd
-      IMAGE_TAGS: tagteste
+      IMAGE_TAGS: tagteste1,latest
     steps:
       - setup
       - run:
@@ -29,10 +37,21 @@ jobs:
           command: |
             docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
       - run:
+          name: Pull Docker image for caching
+          command: |
+            docker pull $IMAGE_NAME:tagteste || true
+      - run:
           name: Build multiarch docker image and push
           command: |
             DOCKER_CLI_EXPERIMENTAL=enabled
-            docker buildx build --push --platform linux/arm64,linux/amd64 -t $IMAGE_NAME:$IMAGE_TAGS .
+            IFS=',' read -ra TAGS <<< "$IMAGE_TAGS"
+            docker buildx build --push --platform linux/arm64,linux/amd64 -t $IMAGE_NAME:${TAGS[0]} .
+            for tag in "${TAGS[@]:1}"; do
+              docker tag $IMAGE_NAME:${TAGS[0]} $IMAGE_NAME:$tag
+              docker push $IMAGE_NAME:$tag
+            done
+            # DOCKER_CLI_EXPERIMENTAL=enabled
+            # docker buildx build --push --platform linux/arm64,linux/amd64 -t $IMAGE_NAME:$IMAGE_TAGS .
 
 workflows:
   build-and-push-multi-arch-image:
