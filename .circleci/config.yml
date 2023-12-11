@@ -44,7 +44,7 @@ jobs:
           name: Build multiarch docker image and push
           command: |
             DOCKER_CLI_EXPERIMENTAL=enabled
-            IFS=',' read -ra TAGS <<< "$IMAGE_TAGS"
+            IFS=',' read -ra TAGS <<<"$IMAGE_TAGS"
             BUILDX_ARGS=""
             for tag in "${TAGS[@]}"; do
               BUILDX_ARGS="$BUILDX_ARGS -t $IMAGE_NAME:$tag"
