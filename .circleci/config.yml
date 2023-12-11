@@ -30,7 +30,7 @@ jobs:
     environment:
       IMAGE_NAME: igorferreir4/cicd
       IMAGE_TAGS: tagteste1,tagteste2,latest
-      IMAGE_ARCHS: linux/arm64,linux/amd64,linux/arm/v7
+      IMAGE_ARCHS: linux/arm64/v8,linux/amd64,linux/arm/v7
     steps: 
       - setup
       - run:
