@@ -29,17 +29,13 @@ jobs:
     executor: docker-executor
     environment:
       IMAGE_NAME: igorferreir4/cicd
-      IMAGE_TAGS: tagteste11,tagteste22
+      IMAGE_TAGS: tagteste1,tagteste2
     steps: 
       - setup
       - run:
           name: Login to image registry
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login --username $DOCKERHUB_USERNAME --password-stdin
-      - run:
-          name: Pull Docker image for caching
-          command: |
-            docker pull $IMAGE_NAME:tagteste1 || true
       - run:
           name: Build multiarch docker image and push
           command: |
@@ -75,10 +71,6 @@ jobs:
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login --username $DOCKERHUB_USERNAME --password-stdin
       - run:
-          name: Pull Docker image for caching
-          command: |
-            docker pull $IMAGE_NAME:tagteste1 || true
-      - run:
           name: Build multiarch docker image and push
           command: |
             DOCKER_CLI_EXPERIMENTAL=enabled
@@ -88,8 +80,43 @@ jobs:
             done
             docker buildx build --push --platform linux/arm64,linux/amd64 $BUILDX_ARGS .
 
+  build3:
+    machine:
+      image: ubuntu-2204:2023.10.1
+      docker_layer_caching: true
+    resource_class: arm.large
+    environment:
+      IMAGE_NAME: igorferreir4/cicd
+      IMAGE_TAGS: tagteste5,tagteste6
+    steps: 
+      - checkout
+      - run:
+          name: setup Qemu
+          command: |
+            docker run --rm --privileged hectorm/qemu-user-static --reset -p yes
+      - run:
+          name: Create builder
+          command: |
+            export DOCKER_CLI_EXPERIMENTAL=enabled
+            docker context create multi-arch-build
+            docker buildx create --use multi-arch-build
+      - run:
+          name: Login to image registry
+          command: |
+            echo "$DOCKERHUB_PASSWORD" | docker login --username $DOCKERHUB_USERNAME --password-stdin
+      - run:
+          name: Build multiarch docker image and push
+          command: |
+            DOCKER_CLI_EXPERIMENTAL=enabled
+            BUILDX_ARGS=""
+            for tag in $(echo $IMAGE_TAGS | tr "," " "); do
+              BUILDX_ARGS="$BUILDX_ARGS -t $IMAGE_NAME:$tag"
+            done
+            docker buildx build --push --platform linux/arm64 -f Dockerfile.arm64 $BUILDX_ARGS .
+
 workflows:
   build-and-push-multi-arch-image:
     jobs:
       - build
       - build2
+      - build3
