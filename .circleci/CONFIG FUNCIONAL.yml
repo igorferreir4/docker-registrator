@@ -13,10 +13,16 @@ commands:
       - setup_remote_docker:
           version: docker24
           docker_layer_caching: false
+      # - run:
+      #     name: Setup Qemu
+      #     command: |
+      #       docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
       - run:
-          name: Setup Qemu
-          command: |
-            docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          name: Install qemu-user-static
+          command: sudo apt-get update && sudo apt-get install -y qemu-user-static
+      - run:
+          name: Verify qemu-user-static installation
+          command: qemu-x86_64-static --version
       - run:
           name: Create builder
           command: |
@@ -27,9 +33,10 @@ commands:
 jobs:
   build:
     executor: docker-executor
+    resource_class: arm.large
     environment:
       IMAGE_NAME: igorferreir4/cicd
-      IMAGE_TAGS: tagteste1,tagteste2,latest
+      IMAGE_TAGS: igor1,igor2,latest
       IMAGE_ARCHS: linux/amd64,linux/arm64/v8,linux/arm/v6,linux/arm/v7
       CACHE_REPO: igorferreir4/buildcaches
       CACHE_NAME: registrator
@@ -39,10 +46,6 @@ jobs:
           name: Login to Docker Hub
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login --username $DOCKERHUB_USERNAME --password-stdin
-      # - run:
-      #     name: Pull Docker image for caching
-      #     command: |
-      #       docker pull $IMAGE_NAME || true
       - run:
           name: Build multiarch docker image and push
           command: |
@@ -51,7 +54,12 @@ jobs:
             for tag in $(echo $IMAGE_TAGS | tr "," " "); do
               BUILDX_ARGS="$BUILDX_ARGS -t $IMAGE_NAME:$tag"
             done
-            docker buildx build --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-amd64 --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-arm64 --push --platform $IMAGE_ARCHS $BUILDX_ARGS .
+            docker buildx build \
+            --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-amd64 \
+            --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-arm64 \
+            --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv6 \
+            --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv7 \
+            --push --platform $IMAGE_ARCHS $BUILDX_ARGS .
       - run:
           name: Build cache for amd64 image and push
           command: |
@@ -60,6 +68,14 @@ jobs:
           name: Build cache for arm64 image and push
           command: |
             docker buildx build --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-arm64 --cache-to=type=registry,ref=$CACHE_REPO:$CACHE_NAME-arm64 --platform linux/arm64 .
+      - run:
+          name: Build cache for armv6 image and push
+          command: |
+            docker buildx build --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv6 --cache-to=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv6 --platform linux/arm/v6 .
+      - run:
+          name: Build cache for armv7 image and push
+          command: |
+            docker buildx build --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv7 --cache-to=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv7 --platform linux/arm/v7 .            
 
 workflows:
   build-and-push-multi-arch-image:
