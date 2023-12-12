@@ -45,36 +45,48 @@ jobs:
           name: Login to Docker Hub
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login --username $DOCKERHUB_USERNAME --password-stdin
+      # - run:
+      #     name: Build multiarch docker image and push
+      #     command: |
+      #       DOCKER_CLI_EXPERIMENTAL=enabled
+      #       BUILDX_ARGS=""
+      #       for tag in $(echo $IMAGE_TAGS | tr "," " "); do
+      #         BUILDX_ARGS="$BUILDX_ARGS -t $IMAGE_REPO:$tag"
+      #       done
+      #       docker buildx build \
+      #       --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-amd64 \
+      #       --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-arm64 \
+      #       --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv6 \
+      #       --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv7 \
+      #       --push --platform $IMAGE_ARCHS $BUILDX_ARGS .
+      # - run:
+      #     name: Build cache for amd64 image and push
+      #     command: |
+      #       docker buildx build --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-amd64 --cache-to=type=registry,ref=$CACHE_REPO:$CACHE_NAME-amd64 --platform linux/amd64 .
+      # - run:
+      #     name: Build cache for arm64 image and push
+      #     command: |
+      #       docker buildx build --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-arm64 --cache-to=type=registry,ref=$CACHE_REPO:$CACHE_NAME-arm64 --platform linux/arm64 .
+      # - run:
+      #     name: Build cache for armv6 image and push
+      #     command: |
+      #       docker buildx build --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv6 --cache-to=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv6 --platform linux/arm/v6 .
+      # - run:
+      #     name: Build cache for armv7 image and push
+      #     command: |
+      #       docker buildx build --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv7 --cache-to=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv7 --platform linux/arm/v7 .
       - run:
-          name: Build multiarch docker image and push
+          name: Update Docker Hub description
           command: |
-            DOCKER_CLI_EXPERIMENTAL=enabled
-            BUILDX_ARGS=""
-            for tag in $(echo $IMAGE_TAGS | tr "," " "); do
-              BUILDX_ARGS="$BUILDX_ARGS -t $IMAGE_REPO:$tag"
-            done
-            docker buildx build \
-            --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-amd64 \
-            --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-arm64 \
-            --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv6 \
-            --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv7 \
-            --push --platform $IMAGE_ARCHS $BUILDX_ARGS .
-      - run:
-          name: Build cache for amd64 image and push
-          command: |
-            docker buildx build --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-amd64 --cache-to=type=registry,ref=$CACHE_REPO:$CACHE_NAME-amd64 --platform linux/amd64 .
-      - run:
-          name: Build cache for arm64 image and push
-          command: |
-            docker buildx build --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-arm64 --cache-to=type=registry,ref=$CACHE_REPO:$CACHE_NAME-arm64 --platform linux/arm64 .
-      - run:
-          name: Build cache for armv6 image and push
-          command: |
-            docker buildx build --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv6 --cache-to=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv6 --platform linux/arm/v6 .
-      - run:
-          name: Build cache for armv7 image and push
-          command: |
-            docker buildx build --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv7 --cache-to=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv7 --platform linux/arm/v7 .
+            DOCKERHUB_README=$(cat README.md)
+            DOCKERHUB_DESCRIPTION=123
+            FULL_DESCRIPTION="${DOCKERHUB_DESCRIPTION}\n\n${DOCKERHUB_README}"
+            DATA_JSON='{"full_description": "'"$FULL_DESCRIPTION"'"}'
+            
+            curl -s -X PATCH "https://hub.docker.com/v2/repositories/$IMAGE_REPO/" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: JWT ${DOCKERHUB_PASSWORD}" \
+            -d $DATA_JSON
 
 workflows:
   build-and-push-multi-arch-image:
