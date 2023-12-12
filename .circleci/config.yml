@@ -78,7 +78,7 @@ jobs:
       - run:
           name: Update Docker Hub description
           command: |
-            DOCKERHUB_README=$(cat README.md)
+            DOCKERHUB_README=teste
             DOCKERHUB_DESCRIPTION=123
             FULL_DESCRIPTION="${DOCKERHUB_DESCRIPTION}\n\n${DOCKERHUB_README}"
             DATA_JSON='{"full_description": "'"$FULL_DESCRIPTION"'"}'
