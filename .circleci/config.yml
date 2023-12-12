@@ -29,8 +29,8 @@ jobs:
     executor: docker-executor
     environment:
       IMAGE_NAME: igorferreir4/cicd
-      IMAGE_TAGS: amd64earm64
-      IMAGE_ARCHS: linux/amd64,linux/arm64/v8
+      IMAGE_TAGS: latest
+      IMAGE_ARCHS: linux/amd64,linux/arm64
       CACHE_REPO: igorferreir4/buildcaches
       CACHE_NAME: registrator
     steps: 
@@ -65,7 +65,7 @@ jobs:
     executor: docker-executor
     environment:
       IMAGE_NAME: igorferreir4/cicd
-      IMAGE_TAGS: armv6
+      IMAGE_TAGS: latest
       IMAGE_ARCHS: linux/arm/v6
       CACHE_REPO: igorferreir4/buildcaches
       CACHE_NAME: registrator
@@ -97,7 +97,7 @@ jobs:
     executor: docker-executor
     environment:
       IMAGE_NAME: igorferreir4/cicd
-      IMAGE_TAGS: armv7
+      IMAGE_TAGS: latest
       IMAGE_ARCHS: linux/arm/v7
       CACHE_REPO: igorferreir4/buildcaches
       CACHE_NAME: registrator
