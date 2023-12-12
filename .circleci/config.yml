@@ -75,19 +75,16 @@ jobs:
       # - run:
       #     name: Build cache for armv7 image and push
       #     command: |
-      #       docker buildx build --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv7 --cache-to=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv7 --platform linux/arm/v7 .            
+      #       docker buildx build --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv7 --cache-to=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv7 --platform linux/arm/v7 .
       - run:
           name: Update Docker Hub description
           command: |
-            DOCKERHUB_README=$(cat README.md)
-            DOCKERHUB_DESCRIPTION=TESTE123
-            FULL_DESCRIPTION="${DOCKERHUB_DESCRIPTION}\n\n${DOCKERHUB_README}"
-            DATA_JSON='{"full_description": "'"$FULL_DESCRIPTION"'"}'
-            
-            curl -s -X PATCH https://hub.docker.com/v2/repositories/igorferreir4/teste/ \
-            -H "Content-Type: application/json" \
-            -H "Authorization: JWT ${DOCKERHUB_PASSWORD}" \
-            -d $DATA_JSON
+            docker run -v $PWD:/workspace \
+              -e DOCKERHUB_USERNAME='$DOCKERHUB_USERNAME' \
+              -e DOCKERHUB_PASSWORD='$DOCKERHUB_PASSWORD' \
+              -e DOCKERHUB_REPOSITORY='$IMAGE_REPO' \
+              -e README_FILEPATH='./README.md' \
+              peterevans/dockerhub-description:3
 
 
 workflows:
