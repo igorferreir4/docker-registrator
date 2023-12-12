@@ -25,12 +25,12 @@ commands:
             docker buildx create --use multi-arch-build
 
 jobs:
-  build:
+  build-amd64-arm64:
     executor: docker-executor
     environment:
       IMAGE_NAME: igorferreir4/cicd
-      IMAGE_TAGS: tagteste1,tagteste2,latest
-      IMAGE_ARCHS: linux/amd64,linux/arm64/v8,linux/arm/v6,linux/arm/v7
+      IMAGE_TAGS: amd64earm64
+      IMAGE_ARCHS: linux/amd64,linux/arm64/v8
       CACHE_REPO: igorferreir4/buildcaches
       CACHE_NAME: registrator
     steps: 
@@ -42,8 +42,7 @@ jobs:
       # - run:
       #     name: Pull Docker image for caching
       #     command: |
-      #       docker pull $CACHE_REPO:$CACHE_NAME-amd64 || true
-      #       docker pull $CACHE_REPO:$CACHE_NAME-arm64 || true
+      #       docker pull $IMAGE_NAME || true
       - run:
           name: Build multiarch docker image and push
           command: |
@@ -62,7 +61,75 @@ jobs:
           command: |
             docker buildx build --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-arm64 --cache-to=type=registry,ref=$CACHE_REPO:$CACHE_NAME-arm64 --platform linux/arm64 .
 
+  build-arm-v6:
+    executor: docker-executor
+    environment:
+      IMAGE_NAME: igorferreir4/cicd
+      IMAGE_TAGS: armv6
+      IMAGE_ARCHS: linux/arm/v6
+      CACHE_REPO: igorferreir4/buildcaches
+      CACHE_NAME: registrator
+    steps: 
+      - setup
+      - run:
+          name: Login to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASSWORD" | docker login --username $DOCKERHUB_USERNAME --password-stdin
+      # - run:
+      #     name: Pull Docker image for caching
+      #     command: |
+      #       docker pull $IMAGE_NAME || true
+      - run:
+          name: Build multiarch docker image and push
+          command: |
+            DOCKER_CLI_EXPERIMENTAL=enabled
+            BUILDX_ARGS=""
+            for tag in $(echo $IMAGE_TAGS | tr "," " "); do
+              BUILDX_ARGS="$BUILDX_ARGS -t $IMAGE_NAME:$tag"
+            done
+            docker buildx build --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv6 --push --platform $IMAGE_ARCHS $BUILDX_ARGS .
+      - run:
+          name: Build cache for arm/v6 image and push
+          command: |
+            docker buildx build --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv6 --cache-to=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv6 --platform linux/arm/v6 .
+
+  build-arm-v7:
+    executor: docker-executor
+    environment:
+      IMAGE_NAME: igorferreir4/cicd
+      IMAGE_TAGS: armv7
+      IMAGE_ARCHS: linux/arm/v7
+      CACHE_REPO: igorferreir4/buildcaches
+      CACHE_NAME: registrator
+    steps: 
+      - setup
+      - run:
+          name: Login to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASSWORD" | docker login --username $DOCKERHUB_USERNAME --password-stdin
+      # - run:
+      #     name: Pull Docker image for caching
+      #     command: |
+      #       docker pull $IMAGE_NAME || true
+      - run:
+          name: Build multiarch docker image and push
+          command: |
+            DOCKER_CLI_EXPERIMENTAL=enabled
+            BUILDX_ARGS=""
+            for tag in $(echo $IMAGE_TAGS | tr "," " "); do
+              BUILDX_ARGS="$BUILDX_ARGS -t $IMAGE_NAME:$tag"
+            done
+            docker buildx build --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv7 --push --platform $IMAGE_ARCHS $BUILDX_ARGS .
+      - run:
+          name: Build cache for armv7 image and push
+          command: |
+            docker buildx build --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv7 --cache-to=type=registry,ref=$CACHE_REPO:$CACHE_NAME-armv7 --platform linux/arm/v7 .
+
 workflows:
-  build-and-push-multi-arch-image:
+  build-and-push-registrator:
     jobs:
-      - build
+      - build-amd64-arm64
+      - build-arm-v6
+  build-and-push-registrator-2:
+    jobs:
+      - build-arm-v7
