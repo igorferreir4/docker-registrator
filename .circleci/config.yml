@@ -35,11 +35,11 @@ jobs:
     executor: docker-executor
     resource_class: arm.large
     environment:
-      IMAGE_NAME: igorferreir4/cicd
+      IMAGE_REPO: igorferreir4/teste
       IMAGE_TAGS: igor1,igor2,latest
       IMAGE_ARCHS: linux/amd64,linux/arm64/v8,linux/arm/v6,linux/arm/v7
       CACHE_REPO: igorferreir4/buildcaches
-      CACHE_NAME: registrator
+      CACHE_NAME: teste
     steps: 
       - setup
       - run:
@@ -52,7 +52,7 @@ jobs:
             DOCKER_CLI_EXPERIMENTAL=enabled
             BUILDX_ARGS=""
             for tag in $(echo $IMAGE_TAGS | tr "," " "); do
-              BUILDX_ARGS="$BUILDX_ARGS -t $IMAGE_NAME:$tag"
+              BUILDX_ARGS="$BUILDX_ARGS -t $IMAGE_REPO:$tag"
             done
             docker buildx build \
             --cache-from=type=registry,ref=$CACHE_REPO:$CACHE_NAME-amd64 \

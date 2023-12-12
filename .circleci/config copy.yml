@@ -1,57 +1,16 @@
-version: 2.1
+version: '2.1'
 
-executors:
-  docker-executor:
-    docker:
-      - image: cimg/base:2023.12
-    resource_class: large
-
-commands:
-  setup:
-    steps:
-      - checkout
-      - setup_remote_docker:
-          version: docker24
-          docker_layer_caching: false
-      - run:
-          name: Setup Qemu
-          command: |
-            docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-      - run:
-          name: Create builder
-          command: |
-            export DOCKER_CLI_EXPERIMENTAL=enabled
-            docker context create multi-arch-build
-            docker buildx create --use multi-arch-build
-
-jobs:
-  build:
-    executor: docker-executor
-    environment:
-      IMAGE_NAME: igorferreir4/cicd
-      IMAGE_TAGS: tagteste1,tagteste2,latest
-      IMAGE_ARCHS: linux/amd64,linux/arm64/v8,linux/arm/v6,linux/arm/v7
-    steps: 
-      - setup
-      - run:
-          name: Login to Docker Hub
-          command: |
-            echo "$DOCKERHUB_PASSWORD" | docker login --username $DOCKERHUB_USERNAME --password-stdin
-      - run:
-          name: Pull Docker image for caching
-          command: |
-            docker pull $IMAGE_NAME || true
-      - run:
-          name: Build multiarch docker image and push
-          command: |
-            DOCKER_CLI_EXPERIMENTAL=enabled
-            BUILDX_ARGS=""
-            for tag in $(echo $IMAGE_TAGS | tr "," " "); do
-              BUILDX_ARGS="$BUILDX_ARGS -t $IMAGE_NAME:$tag"
-            done
-            docker buildx build --push --platform $IMAGE_ARCHS --cache-from=type=registry,ref=$IMAGE_NAME $BUILDX_ARGS .
+orbs:
+  docker: circleci/docker@2.4.0
 
 workflows:
-  build-and-push-multi-arch-image:
+  build-docker-image-only-with-buildkit:
     jobs:
-      - build
+      - docker/publish:
+          image: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+          remote-docker-version: docker24
+          update-description: true
+          use-buildkit: true
+          use-remote-docker: true
+          docker-username: DOCKERHUB_USERNAME
+          docker-password: DOCKERHUB_PASSWORD
