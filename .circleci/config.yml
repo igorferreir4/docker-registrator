@@ -13,16 +13,16 @@ commands:
       - setup_remote_docker:
           version: docker24
           docker_layer_caching: false
-      - run:
-          name: Install qemu-user-static
-          command: sudo apt-get update && sudo apt-get install -y qemu-user-static
-      - run:
-          name: Verify qemu-user-static installation
-          command: qemu-x86_64-static --version
       # - run:
-      #     name: Setup Qemu
-      #     command: |
-      #       docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+      #     name: Install qemu-user-static
+      #     command: sudo apt-get update && sudo apt-get install -y qemu-user-static
+      # - run:
+      #     name: Verify qemu-user-static installation
+      #     command: qemu-x86_64-static --version
+      - run:
+          name: Setup Qemu
+          command: |
+            docker run --rm --privileged hectorm/qemu-user-static --reset -p yes
       - run:
           name: Create builder
           command: |
