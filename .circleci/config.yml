@@ -34,6 +34,7 @@ jobs:
       CACHE_REPO: igorferreir4/buildcaches
       CACHE_TAG: casdoor-1.0.1-amd64
       CACHE_TAG_OLD: casdoor-1.0.1-amd64
+      GOARCH: amd64
     working_directory: ~/project/src/teste
     steps:
       - checkout:
@@ -55,6 +56,7 @@ jobs:
       CACHE_REPO: igorferreir4/buildcaches
       CACHE_TAG: casdoor-1.0.1-arm64
       CACHE_TAG_OLD: casdoor-1.0.1-arm64
+      GOARCH: arm64
     working_directory: ~/project/src/teste
     steps:
       - checkout:
