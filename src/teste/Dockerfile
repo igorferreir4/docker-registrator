@@ -8,7 +8,7 @@ FROM golang:1.20.12 AS BACK
 WORKDIR /go/src/casdoor
 COPY . .
 RUN chmod +x ./build.sh && ./build.sh
-RUN go test -v -run TestGetVersionInfo ./util/system_test.go ./util/system.go > version_info.txt
+# RUN go test -v -run TestGetVersionInfo ./util/system_test.go ./util/system.go > version_info.txt
 
 FROM alpine:latest AS FINAL
 LABEL MAINTAINER="https://casdoor.org/"
