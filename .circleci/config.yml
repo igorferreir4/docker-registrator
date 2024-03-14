@@ -41,7 +41,7 @@ jobs:
     environment:
       CACHE_REPO: igorferreir4/buildcaches
       CACHE_TAG: casdoor-amd64
-    working_directory: ~/project/containers/casdoor
+    working_directory: ~/project/src/teste
     steps:
       - checkout:
           path: ~/project
@@ -61,7 +61,7 @@ jobs:
     environment:
       CACHE_REPO: igorferreir4/buildcaches
       CACHE_TAG: casdoor-arm64
-    working_directory: ~/project/containers/casdoor
+    working_directory: ~/project/src/teste
     steps:
       - checkout:
           path: ~/project
@@ -83,7 +83,7 @@ jobs:
       CACHE_ARM64: casdoor-arm64
       IMAGE_REPO: igorferreir4/casdoor
       IMAGE_TAGS: latest
-    working_directory: ~/project/containers/casdoor
+    working_directory: ~/project/src/teste
     steps:
       - checkout:
           path: ~/project
