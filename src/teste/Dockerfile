@@ -7,7 +7,7 @@ RUN yarn install --frozen-lockfile --network-timeout 1000000 && yarn run build
 FROM golang:1.20.12 AS BACK
 WORKDIR /go/src/casdoor
 COPY . .
-RUN ./build.sh
+RUN chmod +x ./build.sh && ./build.sh
 RUN go test -v -run TestGetVersionInfo ./util/system_test.go ./util/system.go > version_info.txt
 
 FROM alpine:latest AS FINAL
