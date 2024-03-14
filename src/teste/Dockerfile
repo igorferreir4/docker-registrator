@@ -10,7 +10,7 @@ COPY . .
 RUN ./build.sh
 RUN go test -v -run TestGetVersionInfo ./util/system_test.go ./util/system.go > version_info.txt
 
-FROM alpine:latest AS STANDARD
+FROM alpine:latest AS FINAL
 LABEL MAINTAINER="https://casdoor.org/"
 ARG USER=casdoor
 
